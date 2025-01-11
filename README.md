@@ -102,6 +102,8 @@ npm run test:e2e
 ```
 currency-converter/
 ├── src/
+│   ├── config/
+│   │   ├── env.validation.ts
 │   ├── app.module.ts
 │   ├── main.ts
 │   ├── currency/

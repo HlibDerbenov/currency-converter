@@ -3,6 +3,7 @@ import { CurrencyService } from '../../src/currency/currency.service';
 import { RedisService } from '../../src/cache/cache.module';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { Currencies, currencyNameToCode } from '../../src/constants/currencies';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -32,21 +33,38 @@ const eurToUahRateCross = 43.22;
 
 const mockRates = [
   {
-    currencyCodeA: 840,
-    currencyCodeB: 980,
+    currencyCodeA: currencyNameToCode.USD,
+    currencyCodeB: currencyNameToCode.UAH,
     rateBuy: usdToUahRateBuy,
     rateSell: usdToUahRateSell,
   },
   {
-    currencyCodeA: 978,
-    currencyCodeB: 980,
+    currencyCodeA: currencyNameToCode.EUR,
+    currencyCodeB: currencyNameToCode.UAH,
     rateBuy: eurToUahRateBuy,
     rateSell: 43.85,
   },
-  { currencyCodeA: 978, currencyCodeB: 840, rateBuy: 1.021, rateSell: 1.032 },
-  { currencyCodeA: 826, currencyCodeB: 980, rateCross: 52.6779 },
-  { currencyCodeA: 392, currencyCodeB: 980, rateCross: 0.2716 },
-  { currencyCodeA: 156, currencyCodeB: 980, rateCross: 5.8302 },
+  {
+    currencyCodeA: currencyNameToCode.EUR,
+    currencyCodeB: currencyNameToCode.USD,
+    rateBuy: 1.021,
+    rateSell: 1.032,
+  },
+  {
+    currencyCodeA: currencyNameToCode.GBP,
+    currencyCodeB: currencyNameToCode.UAH,
+    rateCross: 52.6779,
+  },
+  {
+    currencyCodeA: currencyNameToCode.JPY,
+    currencyCodeB: currencyNameToCode.UAH,
+    rateCross: 0.2716,
+  },
+  {
+    currencyCodeA: currencyNameToCode.CNY,
+    currencyCodeB: currencyNameToCode.UAH,
+    rateCross: 5.8302,
+  },
 ];
 
 describe('CurrencyService', () => {
@@ -86,10 +104,14 @@ describe('CurrencyService', () => {
   it('should convert using direct rate', async () => {
     jest.spyOn(service, 'getExchangeRates').mockResolvedValue(mockRates);
 
-    const result = await service.convertCurrency('USD', 'UAH', testAmount);
+    const result = await service.convertCurrency(
+      Currencies.USD,
+      Currencies.UAH,
+      testAmount,
+    );
     expect(result).toEqual({
-      source: 'USD',
-      target: 'UAH',
+      source: Currencies.USD,
+      target: Currencies.UAH,
       amount: testAmount,
       convertedAmount: testAmount * usdToUahRateBuy,
     });
@@ -98,10 +120,14 @@ describe('CurrencyService', () => {
   it('should convert using reverse rate', async () => {
     jest.spyOn(service, 'getExchangeRates').mockResolvedValue(mockRates);
 
-    const result = await service.convertCurrency('UAH', 'USD', testAmount);
+    const result = await service.convertCurrency(
+      Currencies.UAH,
+      Currencies.USD,
+      testAmount,
+    );
     expect(result).toEqual({
-      source: 'UAH',
-      target: 'USD',
+      source: Currencies.UAH,
+      target: Currencies.USD,
       amount: testAmount,
       convertedAmount: testAmount / uahToUsdRateSell,
     });
@@ -110,10 +136,14 @@ describe('CurrencyService', () => {
   it('should handle rateCross for reverse rate', async () => {
     jest.spyOn(service, 'getExchangeRates').mockResolvedValue(mockRates);
 
-    const result = await service.convertCurrency('EUR', 'UAH', testAmount);
+    const result = await service.convertCurrency(
+      Currencies.EUR,
+      Currencies.UAH,
+      testAmount,
+    );
     expect(result).toEqual({
-      source: 'EUR',
-      target: 'UAH',
+      source: Currencies.EUR,
+      target: Currencies.UAH,
       amount: testAmount,
       convertedAmount: testAmount * eurToUahRateCross,
     });
@@ -123,7 +153,11 @@ describe('CurrencyService', () => {
     jest.spyOn(service, 'getExchangeRates').mockResolvedValue(mockRates);
 
     await expect(
-      service.convertCurrency('INVALID', 'UAH', testAmount),
+      service.convertCurrency(
+        Currencies['INVALID'],
+        Currencies.UAH,
+        testAmount,
+      ),
     ).rejects.toThrow('Invalid currency code');
   });
 
@@ -131,7 +165,7 @@ describe('CurrencyService', () => {
     jest.spyOn(service, 'getExchangeRates').mockResolvedValue(mockRates);
 
     await expect(
-      service.convertCurrency('GBP', 'USD', testAmount),
+      service.convertCurrency(Currencies.GBP, Currencies.USD, testAmount),
     ).rejects.toThrow('Currency conversion rate not found');
   });
 });

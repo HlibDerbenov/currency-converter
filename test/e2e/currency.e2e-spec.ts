@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../../src/app.module';
+import { Currencies } from '../../src/constants/currencies';
 
 describe('Currency E2E', () => {
   let app: INestApplication;
@@ -18,9 +19,9 @@ describe('Currency E2E', () => {
   it('/currency/convert (POST)', async () => {
     const response = await request(app.getHttpServer())
       .post('/currency/convert')
-      .send({ source: 'USD', target: 'UAH', amount: 100 });
+      .send({ source: Currencies.USD, target: Currencies.UAH, amount: 100 });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatus.OK);
     expect(response.body).toHaveProperty('convertedAmount');
   });
 
