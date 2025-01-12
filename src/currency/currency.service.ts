@@ -82,7 +82,7 @@ export class CurrencyService {
 
     throw new HttpException(
       'Currency conversion rate not found',
-      HttpStatus.BAD_REQUEST,
+      HttpStatus.NOT_FOUND,
     );
   }
 }
